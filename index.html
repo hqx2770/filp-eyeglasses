@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>翻转拍训练系统</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 顶部栏 -->
+  <div class="top-bar">
+    <div class="btn-group">
+      <button class="btn btn-secondary" id="btn-exit">退出</button>
+      <button class="btn btn-secondary" id="btn-history">历史记录</button>
+    </div>
+    <div class="title">翻转拍训练系统</div>
+    <div class="btn-group">
+      <button class="btn btn-secondary" id="btn-help">操作说明</button>
+      <button class="btn btn-primary" id="btn-config">参数设置</button>
+    </div>
+  </div>
+
+  <!-- 开始界面 -->
+  <div class="start-screen" id="screen-start">
+    <h1>翻转拍训练</h1>
+    <p class="subtitle">调节力训练 · 近视防控辅助</p>
+    <button class="btn btn-primary btn-lg" id="btn-start">开始训练</button>
+  </div>
+
+  <!-- 训练界面 -->
+  <div class="training-area" id="screen-training" style="display:none;">
+    <div class="training-main">
+      <div class="timer-display" id="timer-display">剩余时间: 03:00</div>
+      <div class="flipper-mode positive" id="flipper-mode">+2.00D (正镜)</div>
+      <div class="score-display" id="score-display">当前得分: 0</div>
+      <div class="count-display" id="count-display">
+        正确 <span class="correct" id="correct-count">0</span>
+        &nbsp;&nbsp;
+        错误 <span class="wrong" id="wrong-count">0</span>
+      </div>
+      <div class="grid-container" id="grid-container"></div>
+    </div>
+    <div class="bottom-bar">
+      <div class="btn-group">
+        <button class="btn btn-secondary" id="btn-pause">暂停</button>
+        <button class="btn btn-secondary" id="btn-redo">重做</button>
+        <button class="btn btn-secondary" id="btn-cantsee">看不见</button>
+      </div>
+      <div class="shortcut-hint">
+        ←↑→↓ 回答方向 | 右下角方向盘可触控作答 | Space 暂停 | R 重做 | C 看不见 | Esc 退出
+      </div>
+    </div>
+    <div class="soft-keyboard" id="soft-keyboard" aria-label="方向软键盘">
+      <button class="soft-key up" data-action="up" aria-label="上">↑</button>
+      <button class="soft-key left" data-action="left" aria-label="左">←</button>
+      <button class="soft-key right" data-action="right" aria-label="右">→</button>
+      <button class="soft-key down" data-action="down" aria-label="下">↓</button>
+    </div>
+  </div>
+
+  <!-- 配置面板 -->
+  <div class="config-panel" id="config-panel">
+    <h3>
+      训练参数配置
+      <button class="close-btn" id="config-close">&times;</button>
+    </h3>
+    <div class="config-item">
+      <label>镜片度数</label>
+      <select data-config="flipperDiopter">
+        <option value="1.00">±1.00D</option>
+        <option value="1.50">±1.50D</option>
+        <option value="2.00" selected>±2.00D</option>
+        <option value="2.50">±2.50D</option>
+      </select>
+    </div>
+    <div class="config-item">
+      <label>E 字大小</label>
+      <select data-config="stimulusSize">
+        <option value="small">小</option>
+        <option value="medium" selected>中</option>
+        <option value="large">大</option>
+      </select>
+    </div>
+    <div class="config-item">
+      <label>显示缩放</label>
+      <select data-config="displayScalePercent">
+        <option value="40">40%</option>
+        <option value="50" selected>50%</option>
+        <option value="60">60%</option>
+        <option value="75">75%</option>
+        <option value="100">100%</option>
+      </select>
+    </div>
+    <div class="config-item calibration-item">
+      <label>屏幕校准</label>
+      <p class="config-help">请用学生常用尺子的 1cm 刻度与下方标尺对齐，调到一致后保存。</p>
+      <div class="calibration-preview-wrap">
+        <div class="calibration-preview" id="calibration-preview"></div>
+      </div>
+      <input type="range" id="calibration-slider" min="20" max="160" step="1">
+      <div class="calibration-meta">
+        <span id="calibration-width-label">当前标尺宽度：10mm</span>
+        <button class="btn btn-secondary btn-sm" id="calibration-save">保存校准</button>
+      </div>
+      <div class="calibration-status" id="calibration-status">未校准，将使用默认估算尺寸。</div>
+    </div>
+    <div class="config-item">
+      <label>翻转间隔</label>
+      <select data-config="flipInterval">
+        <option value="5">5 秒</option>
+        <option value="10">10 秒</option>
+        <option value="15">15 秒</option>
+        <option value="20">20 秒</option>
+        <option value="25">25 秒</option>
+        <option value="30" selected>30 秒</option>
+        <option value="35">35 秒</option>
+        <option value="40">40 秒</option>
+        <option value="45">45 秒</option>
+        <option value="50">50 秒</option>
+        <option value="55">55 秒</option>
+        <option value="60">60 秒</option>
+      </select>
+    </div>
+    <div class="config-item">
+      <label>训练时长</label>
+      <select data-config="trainingDuration">
+        <option value="1">1 分钟</option>
+        <option value="3" selected>3 分钟</option>
+        <option value="5">5 分钟</option>
+        <option value="10">10 分钟</option>
+      </select>
+    </div>
+    <div class="config-item">
+      <label>视标颜色</label>
+      <select data-config="bgColor">
+        <option value="white" selected>白底黑字</option>
+        <option value="black">黑底白字</option>
+        <option value="redGreen">红绿对比</option>
+      </select>
+    </div>
+    <div style="margin-top:20px;">
+      <button class="btn btn-secondary" id="config-reset" style="width:100%;">恢复默认</button>
+    </div>
+  </div>
+
+  <!-- 训练报告弹窗 -->
+  <div class="report-overlay hidden" id="report-overlay">
+    <div class="report-card">
+      <h2> 训练报告</h2>
+      <div class="report-stats">
+        <div class="stat-item">
+          <div class="stat-label">总用时</div>
+          <div class="stat-value blue" id="report-total-time">03:00</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">总得分</div>
+          <div class="stat-value" id="report-total-score">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">正确次数</div>
+          <div class="stat-value green" id="report-correct">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">错误次数</div>
+          <div class="stat-value red" id="report-wrong">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">总正确率</div>
+          <div class="stat-value green" id="report-accuracy">0%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">正镜正确率</div>
+          <div class="stat-value" id="report-pos-acc">0%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">负镜正确率</div>
+          <div class="stat-value" id="report-neg-acc">0%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">翻转次数</div>
+          <div class="stat-value" id="report-flips">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">看不见次数</div>
+          <div class="stat-value orange" id="report-skips">0</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:16px;">
+        <span style="font-size:14px;color:var(--text-secondary);">评级：</span>
+        <span id="report-rating" style="font-size:20px;font-weight:700;">-</span>
+      </div>
+      <div class="report-actions">
+        <button class="btn btn-secondary" id="report-close">关闭</button>
+        <button class="btn btn-secondary" id="report-history">查看历史</button>
+        <button class="btn btn-primary" id="report-retry">再来一次</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 历史记录弹窗 -->
+  <div class="history-overlay hidden" id="history-overlay">
+    <div class="history-card">
+      <h2> 历史训练记录</h2>
+      <div class="history-toolbar">
+        <div class="history-filter">
+          <label for="history-date-filter">日期</label>
+          <input type="date" id="history-date-filter">
+        </div>
+        <div class="history-filter">
+          <label for="history-diopter-filter">镜片度数</label>
+          <select id="history-diopter-filter">
+            <option value="all">全部度数</option>
+            <option value="1.00">±1.00D</option>
+            <option value="1.50">±1.50D</option>
+            <option value="2.00">±2.00D</option>
+            <option value="2.50">±2.50D</option>
+          </select>
+        </div>
+      </div>
+      <div class="history-chart-panel">
+        <div class="history-chart-title">正确率趋势</div>
+        <canvas id="history-chart" aria-label="历史正确率趋势图"></canvas>
+      </div>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>度数</th>
+            <th>正确/总</th>
+            <th>正确率</th>
+            <th>得分</th>
+            <th>评级</th>
+          </tr>
+        </thead>
+        <tbody id="history-table-body"></tbody>
+      </table>
+      <div class="history-actions">
+        <button class="btn btn-danger btn-sm" id="history-clear">清除全部</button>
+        <button class="btn btn-primary" id="history-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 操作说明弹窗 -->
+  <div class="help-overlay hidden" id="help-overlay">
+    <div class="help-card">
+      <h2>操作说明</h2>
+      <div class="help-item"><span>回答目标 E 字方向</span><span class="key">↑ ↓ ← →</span></div>
+      <div class="help-item"><span>平板触控回答</span><span class="key">右下方向盘</span></div>
+      <div class="help-item"><span>暂停 / 继续</span><span class="key">Space</span></div>
+      <div class="help-item"><span>重新生成</span><span class="key">R</span></div>
+      <div class="help-item"><span>标记看不见（跳过）</span><span class="key">C</span></div>
+      <div class="help-item"><span>退出训练</span><span class="key">Esc</span></div>
+      <div class="help-item"><span>全屏模式</span><span class="key">F11</span></div>
+      <p style="font-size:13px;color:var(--text-light);margin-top:12px;">
+        5×5 网格每个格子都有一个 E 字，红色方框标记目标格子。<br>
+        请用方向键回答红色方框中 E 字的开口方向。<br>
+        回答正确 +5 分，系统会自动刷新新的目标。
+      </p>
+      <div class="help-actions">
+        <button class="btn btn-primary" id="help-close">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
