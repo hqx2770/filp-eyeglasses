@@ -3,8 +3,9 @@
 // ═══════════════════════════════════════════════════════════
 
 const DEFAULT_CONFIG = {
+  stimulusType: 'E',             // 视标类型: E, C, plane
   flipperDiopter: '2.00',        // 镜片度数: 1.00, 1.50, 2.00, 2.50
-  stimulusSize: 'medium',        // E 字大小: small, medium, large
+  stimulusSize: 'medium',        // 视标大小: small, medium, large
   displayScalePercent: '50',     // 训练显示缩放基准
   flipInterval: 30,              // 翻转间隔(秒)
   trainingDuration: 3,           // 训练时长(分钟)
@@ -22,6 +23,7 @@ const DEFAULT_PX_PER_MM = 96 / 25.4;
 const CALIBRATION_TARGET_MM = 10;
 
 const CONFIG_KEYS = {
+  stimulusType: 'stimulus_type',
   flipperDiopter: 'flipper_diopter',
   stimulusSize: 'stimulus_size',
   displayScalePercent: 'display_scale_percent',
@@ -99,6 +101,14 @@ function randomDirection() {
   return DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
 }
 
+function createStimulusSVG(type, direction, size) {
+  switch (type) {
+    case 'C': return createCSVG(direction, size);
+    case 'plane': return createPlaneSVG(direction, size);
+    default: return createESVG(direction, size);
+  }
+}
+
 function createESVG(direction) {
   const colors = getColors();
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -134,6 +144,71 @@ function createESVG(direction) {
     line.setAttribute('stroke-linecap', 'round');
     g.appendChild(line);
   });
+
+  svg.appendChild(g);
+  return svg;
+}
+
+// C 字视标 — 开口方向标识
+function createCSVG(direction) {
+  const colors = getColors();
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', '100%');
+  svg.setAttribute('viewBox', '0 0 100 100');
+
+  const rotationMap = {
+    right: 0,
+    down: 90,
+    left: 180,
+    up: 270,
+  };
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.setAttribute('transform', `translate(50,50) rotate(${rotationMap[direction] || 0}) translate(-50,-50)`);
+
+  // 圆弧（右侧开口的 C）
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M 65 25 A 28 28 0 1 0 65 75');
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', colors.fg);
+  path.setAttribute('stroke-width', '8');
+  path.setAttribute('stroke-linecap', 'round');
+  g.appendChild(path);
+
+  svg.appendChild(g);
+  return svg;
+}
+
+// ✈︎ 飞机视标 — 机头方向标识
+function createPlaneSVG(direction) {
+  const colors = getColors();
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', '100%');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+  const rotationMap = {
+    right: 0,
+    down: 90,
+    left: 180,
+    up: 270,
+  };
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.setAttribute('transform', `translate(50,50) rotate(${rotationMap[direction] || 0}) translate(-50,-50)`);
+
+  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.setAttribute('x', '50');
+  text.setAttribute('y', '52');
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('dominant-baseline', 'middle');
+  text.setAttribute('fill', colors.fg);
+  text.setAttribute('font-size', '72');
+  text.setAttribute('font-family', 'Segoe UI Symbol, Segoe UI Emoji, Arial Unicode MS, sans-serif');
+  text.textContent = '✈';
+  g.appendChild(text);
 
   svg.appendChild(g);
   return svg;
@@ -477,7 +552,7 @@ function unbindKeyboard() {
     setCalibrationPreviewWidth(sliderWidth);
 
     if (Number.isFinite(savedPxPerMm) && savedPxPerMm > 0) {
-      els.calibrationStatus.textContent = `已校准：1mm 约等于 ${savedPxPerMm.toFixed(2)}px，E 字将按实际物理尺寸换算。`;
+      els.calibrationStatus.textContent = `已校准：1mm 约等于 ${savedPxPerMm.toFixed(2)}px，视标将按实际物理尺寸换算。`;
     } else {
       els.calibrationStatus.textContent = `未校准：当前使用默认估算值 1mm 约等于 ${DEFAULT_PX_PER_MM.toFixed(2)}px。`;
     }
@@ -680,7 +755,7 @@ function unbindKeyboard() {
           cell.classList.add('is-target');
         }
 
-        const svg = createESVG(dir, size);
+        const svg = createStimulusSVG(config.stimulusType, dir, size);
         svg.style.width = size + 'px';
         svg.style.height = size + 'px';
         cell.appendChild(svg);
@@ -896,7 +971,7 @@ function unbindKeyboard() {
       }
 
       if (screens.training.style.display !== 'none') {
-        if (configKey === 'displayScalePercent' || configKey === 'stimulusSize') {
+        if (configKey === 'displayScalePercent' || configKey === 'stimulusSize' || configKey === 'stimulusType') {
           buildGrid();
         }
         if (configKey === 'bgColor') {

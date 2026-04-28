@@ -65,6 +65,14 @@
       <button class="close-btn" id="config-close">&times;</button>
     </h3>
     <div class="config-item">
+      <label>视标类型</label>
+      <select data-config="stimulusType">
+        <option value="E" selected>E 字</option>
+        <option value="C">C 字</option>
+        <option value="plane">✈︎ 飞机</option>
+      </select>
+    </div>
+    <div class="config-item">
       <label>镜片度数</label>
       <select data-config="flipperDiopter">
         <option value="1.00">±1.00D</option>
@@ -74,7 +82,7 @@
       </select>
     </div>
     <div class="config-item">
-      <label>E 字大小</label>
+      <label>视标大小</label>
       <select data-config="stimulusSize">
         <option value="small">小</option>
         <option value="medium" selected>中</option>
@@ -245,7 +253,7 @@
   <div class="help-overlay hidden" id="help-overlay">
     <div class="help-card">
       <h2>操作说明</h2>
-      <div class="help-item"><span>回答目标 E 字方向</span><span class="key">↑ ↓ ← →</span></div>
+      <div class="help-item"><span>回答目标视标方向</span><span class="key">↑ ↓ ← →</span></div>
       <div class="help-item"><span>平板触控回答</span><span class="key">右下方向盘</span></div>
       <div class="help-item"><span>暂停 / 继续</span><span class="key">Space</span></div>
       <div class="help-item"><span>重新生成</span><span class="key">R</span></div>
@@ -253,8 +261,8 @@
       <div class="help-item"><span>退出训练</span><span class="key">Esc</span></div>
       <div class="help-item"><span>全屏模式</span><span class="key">F11</span></div>
       <p style="font-size:13px;color:var(--text-light);margin-top:12px;">
-        5×5 网格每个格子都有一个 E 字，红色方框标记目标格子。<br>
-        请用方向键回答红色方框中 E 字的开口方向。<br>
+        5×5 网格每个格子都有一个视标，红色方框标记目标格子。<br>
+        E 字 / C 字请回答开口方向，✈︎ 飞机请回答机头方向。<br>
         回答正确 +5 分，系统会自动刷新新的目标。
       </p>
       <div class="help-actions">
