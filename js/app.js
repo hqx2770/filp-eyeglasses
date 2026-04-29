@@ -192,35 +192,60 @@ function createCSVG(direction, size) {
   return svg;
 }
 
-// ✈︎ 飞机视标 — 机头方向标识
-function createPlaneSVG(direction) {
+// ✈︎ 飞机视标 — 机头方向标识（SVG 路径绘制，参考视力表飞机视标图）
+// 20×20 精细像素网格，通过 viewBox 缩放，兼容各尺寸显示
+function createPlaneSVG(direction, size) {
   const colors = getColors();
+  const canvasSize = getStimulusRenderSize(size);
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', '100%');
-  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('width', String(canvasSize));
+  svg.setAttribute('height', String(canvasSize));
+  svg.setAttribute('viewBox', '0 0 20 20');
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-
-  const rotationMap = {
-    right: 0,
-    down: 90,
-    left: 180,
-    up: 270,
-  };
+  svg.setAttribute('aria-label', `Plane stimulus ${direction}`);
+  svg.style.shapeRendering = 'crispEdges';
 
   const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  g.setAttribute('transform', `translate(50,50) rotate(${rotationMap[direction] || 0}) translate(-50,-50)`);
+  g.setAttribute('transform', `translate(10,10) rotate(${STIMULUS_ROTATION_MAP[direction] || 0}) translate(-10,-10)`);
 
-  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  text.setAttribute('x', '50');
-  text.setAttribute('y', '52');
-  text.setAttribute('text-anchor', 'middle');
-  text.setAttribute('dominant-baseline', 'middle');
-  text.setAttribute('fill', colors.fg);
-  text.setAttribute('font-size', '72');
-  text.setAttribute('font-family', 'Segoe UI Symbol, Segoe UI Emoji, Arial Unicode MS, sans-serif');
-  text.textContent = '✈';
-  g.appendChild(text);
+  // 20×20 飞机像素网格（机头朝上为基准方向，手绘设计）
+  // 每行: null=空行, [[s1,e1], [s2,e2], ...] = 多段像素
+  const planeRows = [
+    [[9, 11]],                       // row 0:  鼻尖 (2px)
+    [[8, 12]],                       // row 1:  鼻尖 (4px)
+    [[8, 12]],                       // row 2:  鼻部 (4px)
+    [[8, 12]],                       // row 3:  鼻部 (4px)
+    [[8, 12]],                       // row 4:  前机身 (4px)
+    [[8, 12]],                       // row 5:  翼根前缘 (4px)
+    [[5, 13]],                       // row 6:  机翼延伸 (8px)
+    [[4, 16]],                       // row 7:  机翼展开 (12px)
+    [[2, 18]],                       // row 8:  机翼加宽 (16px)
+    [[1, 19]],                       // row 9:  最大翼展 (18px)
+    [[0, 6], [8, 12], [14, 20]],    // row 10: 机翼回收 (16px, 断开)
+    [[0, 2], [8, 12], [18, 20]],    // row 11: 机翼回收 (8px, 断开)
+    [[8, 12]],                       // row 12: 机翼收窄 (4px)
+    [[8, 12]],                       // row 13: 机翼收窄 (4px)
+    [[8, 12]],                       // row 14: 后机身 (4px)
+    [[8, 12]],                       // row 15: 后机身 (4px)
+    [[8, 12]],                       // row 16: 尾翼段 (4px)
+    [[8, 12]],                       // row 17: 尾翼 (4px)
+    [[7, 13]],                       // row 18: 尾部 (6px)
+    [[6, 9], [11, 14]],             // row 19: 尾尖 (6px, 断开)
+  ];
+
+  const pathParts = planeRows.reduce((acc, ranges, row) => {
+    if (ranges) {
+      ranges.forEach(([s, e]) => {
+        acc.push(`M ${s} ${row} H ${e} V ${row + 1} H ${s} Z`);
+      });
+    }
+    return acc;
+  }, []);
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', pathParts.join(' '));
+  path.setAttribute('fill', colors.fg);
+  g.appendChild(path);
 
   svg.appendChild(g);
   return svg;

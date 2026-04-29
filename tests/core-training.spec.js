@@ -94,11 +94,13 @@ test.describe('核心训练模块', () => {
     test('切换到飞机后网格渲染飞机视标', async ({ page }) => {
       await h.setConfigSelect(page, 'stimulusType', 'plane');
       await h.startTraining(page);
-      const textContent = await page.evaluate(() => {
-        const text = document.querySelector('.grid-cell svg text');
-        return text ? text.textContent : null;
+      const hasPlanePath = await page.evaluate(() => {
+        const path = document.querySelector('.grid-cell svg path');
+        if (!path) return false;
+        const d = path.getAttribute('d');
+        return d.includes('M 9 0 H 11') && d.includes('M 0 10 H 6');
       });
-      expect(textContent).toBe('✈');
+      expect(hasPlanePath).toBe(true);
     });
   });
 

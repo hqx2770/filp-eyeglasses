@@ -116,11 +116,14 @@ test.describe('屏幕校准与缩放测试', () => {
       const visibleCount = await h.countVisibleCells(page);
       expect(visibleCount).toBe(25);
 
-      const hasText = await page.evaluate(() => {
-        const texts = document.querySelectorAll('.grid-cell svg text');
-        return Array.from(texts).every((t) => t.textContent === '✈');
+      const hasPlanePath = await page.evaluate(() => {
+        const paths = document.querySelectorAll('.grid-cell svg path');
+        if (paths.length === 0) return false;
+        return Array.from(paths).every((p) => {
+          const d = p.getAttribute('d');
+          return d.includes('M 9 0 H 11') && d.includes('M 0 10 H 6');
+        });
       });
-      expect(hasText).toBeTruthy();
     });
 
     test('小号视标在 20px=10mm 下渲染', async ({ page }) => {
