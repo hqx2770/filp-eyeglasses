@@ -96,9 +96,29 @@ function parseDateKey(dateText) {
 // ═══════════════════════════════════════════════════════════
 
 const DIRECTIONS = ['up', 'down', 'left', 'right'];
+const STIMULUS_ROTATION_MAP = {
+  right: 0,
+  down: 90,
+  left: 180,
+  up: 270,
+};
 
 function randomDirection() {
   return DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+}
+
+function getStimulusRenderSize(size) {
+  const rawSize = Math.max(1, Number(size) || 0);
+  const pixelRatio = window.devicePixelRatio || 1;
+  return Math.max(1, Math.round(rawSize * pixelRatio) / pixelRatio);
+}
+
+function polarToCartesian(centerX, centerY, radius, angleDeg) {
+  const angleRad = (angleDeg - 90) * Math.PI / 180;
+  return {
+    x: centerX + radius * Math.cos(angleRad),
+    y: centerY + radius * Math.sin(angleRad),
+  };
 }
 
 function createStimulusSVG(type, direction, size) {
@@ -109,71 +129,63 @@ function createStimulusSVG(type, direction, size) {
   }
 }
 
-function createESVG(direction) {
+function createESVG(direction, size) {
   const colors = getColors();
+  const canvasSize = getStimulusRenderSize(size);
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', '100%');
-  svg.setAttribute('viewBox', '0 0 100 100');
-
-  const rotationMap = {
-    right: 0,
-    down: 90,
-    left: 180,
-    up: 270,
-  };
+  svg.setAttribute('width', String(canvasSize));
+  svg.setAttribute('height', String(canvasSize));
+  svg.setAttribute('viewBox', '0 0 5 5');
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.setAttribute('aria-label', `E stimulus ${direction}`);
+  svg.style.shapeRendering = 'crispEdges';
 
   const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  g.setAttribute('transform', `translate(50,50) rotate(${rotationMap[direction] || 0}) translate(-50,-50)`);
+  g.setAttribute('transform', `translate(2.5,2.5) rotate(${STIMULUS_ROTATION_MAP[direction] || 0}) translate(-2.5,-2.5)`);
 
-  const lines = [
-    { x1: 40, y1: 20, x2: 40, y2: 80 },
-    { x1: 40, y1: 20, x2: 70, y2: 20 },
-    { x1: 40, y1: 50, x2: 62, y2: 50 },
-    { x1: 40, y1: 80, x2: 70, y2: 80 },
-  ];
-
-  lines.forEach(l => {
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', l.x1);
-    line.setAttribute('y1', l.y1);
-    line.setAttribute('x2', l.x2);
-    line.setAttribute('y2', l.y2);
-    line.setAttribute('stroke', colors.fg);
-    line.setAttribute('stroke-width', '6');
-    line.setAttribute('stroke-linecap', 'round');
-    g.appendChild(line);
-  });
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M 0 0 H 5 V 1 H 1 V 2 H 4 V 3 H 1 V 4 H 5 V 5 H 0 Z');
+  path.setAttribute('fill', colors.fg);
+  g.appendChild(path);
 
   svg.appendChild(g);
   return svg;
 }
 
 // C 字视标 — 开口方向标识
-function createCSVG(direction) {
+function createCSVG(direction, size) {
   const colors = getColors();
+  const canvasSize = getStimulusRenderSize(size);
+  const center = 2.5;
+  const outerRadius = 2.3;
+  const innerRadius = 1.3;
+  const gapAngle = 32;
+  const startAngle = gapAngle / 2;
+  const endAngle = 360 - (gapAngle / 2);
+  const outerStart = polarToCartesian(center, center, outerRadius, startAngle);
+  const outerEnd = polarToCartesian(center, center, outerRadius, endAngle);
+  const innerStart = polarToCartesian(center, center, innerRadius, startAngle);
+  const innerEnd = polarToCartesian(center, center, innerRadius, endAngle);
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', '100%');
-  svg.setAttribute('viewBox', '0 0 100 100');
-
-  const rotationMap = {
-    right: 0,
-    down: 90,
-    left: 180,
-    up: 270,
-  };
+  svg.setAttribute('width', String(canvasSize));
+  svg.setAttribute('height', String(canvasSize));
+  svg.setAttribute('viewBox', '0 0 5 5');
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.setAttribute('aria-label', `C stimulus ${direction}`);
+  svg.style.shapeRendering = 'geometricPrecision';
 
   const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  g.setAttribute('transform', `translate(50,50) rotate(${rotationMap[direction] || 0}) translate(-50,-50)`);
+  g.setAttribute('transform', `translate(2.5,2.5) rotate(${STIMULUS_ROTATION_MAP[direction] || 0}) translate(-2.5,-2.5)`);
 
-  // 圆弧（右侧开口的 C）
   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', 'M 65 25 A 28 28 0 1 0 65 75');
-  path.setAttribute('fill', 'none');
-  path.setAttribute('stroke', colors.fg);
-  path.setAttribute('stroke-width', '8');
-  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('d', [
+    `M ${outerStart.x} ${outerStart.y}`,
+    `A ${outerRadius} ${outerRadius} 0 1 1 ${outerEnd.x} ${outerEnd.y}`,
+    `L ${innerEnd.x} ${innerEnd.y}`,
+    `A ${innerRadius} ${innerRadius} 0 1 0 ${innerStart.x} ${innerStart.y}`,
+    'Z',
+  ].join(' '));
+  path.setAttribute('fill', colors.fg);
   g.appendChild(path);
 
   svg.appendChild(g);

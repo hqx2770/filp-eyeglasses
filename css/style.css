@@ -215,8 +215,8 @@ body {
 }
 
 .grid-cell svg {
-  width: 15%;
-  height: 15%;
+  display: block;
+  flex: none;
 }
 
 /* ─ 底部控制栏 ─ */

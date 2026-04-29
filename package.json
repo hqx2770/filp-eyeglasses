@@ -1,1 +1,33 @@
-{}
+{
+  "name": "filp-eyeglasses",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:core": "npx playwright test tests/core-training.spec.js",
+    "test:calibration": "npx playwright test tests/calibration-scaling.spec.js",
+    "test:ui": "npx playwright test tests/ui-interaction.spec.js",
+    "test:data": "npx playwright test tests/data-report.spec.js",
+    "test:report": "npx playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hqx2770/filp-eyeglasses.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hqx2770/filp-eyeglasses/issues"
+  },
+  "homepage": "https://github.com/hqx2770/filp-eyeglasses#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
+  }
+}
